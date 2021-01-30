@@ -12,6 +12,11 @@ SCOPES = ['https://mail.google.com/']
 
 
 def get_creds():
+    """
+    :brief Get credentials from file
+
+    :return creds
+    """
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -35,6 +40,12 @@ def get_creds():
 
 
 def get_labels_id(service):
+    """
+    :brief Get the label id of 'Do not delete', create one if doesn't exists
+
+    :param service: gmail service
+    :return the label id of 'Do not delete'
+    """
     results = service.users().labels().list(userId='me').execute()
     labels = results.get('labels', [])
 
@@ -59,17 +70,24 @@ def delete_old_messages(service, not_delete_id):
     :param service: gmail service
     :param not_delete_id: id of the label 'Not delete'
     """
-    messages = service.users().messages().list(userId='me', maxResults=1000).execute()
-    messages = messages.get('messages', [])
+    prev_request = service.users().messages().list(userId='me', maxResults=500)
+    prev_response = prev_request.execute()
+    messages = prev_response.get('messages', [])
 
-    for message_raw in messages:
-        message_data = service.users().messages().get(userId='me',
-                                                      id=message_raw[
-                                                          'id']).execute()
-        if (get_current_ms() - int(message_data['internalDate'])) > elapsed_time_to_ms(nb_year=1) \
-                and not_delete_id not in message_data['labelIds']:
-            service.users().messages().trash(userId='me', id=message_raw['id']).execute()
-            print("A mail had been deleted.")
+    while prev_request is not None:
+        for message_raw in messages:
+            message_data = service.users().messages().get(userId='me',
+                                                          id=message_raw[
+                                                              'id']).execute()
+            if (get_current_ms() - int(message_data['internalDate'])) > elapsed_time_to_ms(nb_year=1) \
+                    and not_delete_id not in message_data['labelIds']:
+                service.users().messages().trash(userId='me', id=message_raw['id']).execute()
+                print("A mail had been deleted.")
+
+        # Because .list only give up to 500 results
+        prev_request = service.users().messages().list_next(previous_request=prev_request, previous_response=prev_response)
+        prev_response = prev_request.execute()
+        messages = prev_response.get('messages', [])
 
 
 def main():
