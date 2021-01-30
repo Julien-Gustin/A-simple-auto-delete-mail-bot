@@ -54,7 +54,7 @@ def get_labels_id(service):
 
 def delete_old_messages(service, not_delete_id):
     """
-    :brief: Delete any messages with label 'Old' and without 'Not delete' one
+    :brief: Delete any messages without label 'Do not delete' one
 
     :param service: gmail service
     :param not_delete_id: id of the label 'Not delete'
