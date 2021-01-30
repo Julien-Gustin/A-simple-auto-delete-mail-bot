@@ -79,7 +79,7 @@ def delete_old_messages(service, not_delete_id):
             message_data = service.users().messages().get(userId='me',
                                                           id=message_raw[
                                                               'id']).execute()
-            if (get_current_ms() - int(message_data['internalDate'])) > elapsed_time_to_ms(nb_year=1) \
+            if (get_current_ms() - int(message_data['internalDate'])) > elapsed_time_to_ms(nb_month=4) \
                     and not_delete_id not in message_data['labelIds']:
                 service.users().messages().trash(userId='me', id=message_raw['id']).execute()
                 print("A mail had been deleted.")
@@ -96,6 +96,7 @@ def main():
 
     while True:
         delete_old_messages(service, do_not_delete_id)
+        print("Pause !")
         time.sleep(60*60)  # 1 hour
 
 
