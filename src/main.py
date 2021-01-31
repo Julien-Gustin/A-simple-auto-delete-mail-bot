@@ -71,10 +71,10 @@ def delete_old_messages(service, not_delete_id):
     :param not_delete_id: id of the label 'Not delete'
     """
     prev_request = service.users().messages().list(userId='me', maxResults=500)
-    prev_response = prev_request.execute()
-    messages = prev_response.get('messages', [])
 
     while prev_request is not None:
+        prev_response = prev_request.execute()
+        messages = prev_response.get('messages', [])
         for message_raw in messages:
             message_data = service.users().messages().get(userId='me',
                                                           id=message_raw[
@@ -86,10 +86,6 @@ def delete_old_messages(service, not_delete_id):
 
         # Because .list only give up to 500 results
         prev_request = service.users().messages().list_next(previous_request=prev_request, previous_response=prev_response)
-        if prev_request:
-            prev_response = prev_request.execute()
-            messages = prev_response.get('messages', [])
-
 
 def main():
     service = build('gmail', 'v1', credentials=get_creds())
