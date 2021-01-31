@@ -86,8 +86,9 @@ def delete_old_messages(service, not_delete_id):
 
         # Because .list only give up to 500 results
         prev_request = service.users().messages().list_next(previous_request=prev_request, previous_response=prev_response)
-        prev_response = prev_request.execute()
-        messages = prev_response.get('messages', [])
+        if prev_request:
+            prev_response = prev_request.execute()
+            messages = prev_response.get('messages', [])
 
 
 def main():
